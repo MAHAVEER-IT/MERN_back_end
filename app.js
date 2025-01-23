@@ -143,3 +143,13 @@ app.delete("/api/expensesdeletebyId/:id", async (req, res) => {
         res.status(404).json({ message: "Expense not found" });
       }
   });
+
+  app.delete("/api/expensesdeleteAll", async (req, res) => {
+      const result = await Expense.deleteMany({});
+  
+      if (result) {
+        res.status(200).json(result);
+      } else {
+        res.status(404).json({ message: "Expense not found" });
+      }
+  });
