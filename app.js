@@ -60,12 +60,12 @@ const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
 const app = express();
-app.use(express.json()); // Middleware to parse JSON request bodies
+app.use(express.json()); 
 
 const PORT = 8000;
 
 // MongoDB connection
-const mongourl = "mongodb://localhost:27017/Practice";
+const mongourl = "mongodb+srv://mahaveer:mahaveer$310@cluster0.3fzbv.mongodb.net/Practice";
 mongoose
   .connect(mongourl)
   .then(() => {
