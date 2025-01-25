@@ -84,6 +84,9 @@ const expenseSchema = new mongoose.Schema({
   amount: { type: Number, required: true, min: 1 }, 
 });
 
+
+
+
 const Expense = mongoose.model("expense-tracker", expenseSchema);
 
 
@@ -153,3 +156,96 @@ app.delete("/api/expensesdeletebyId/:id", async (req, res) => {
         res.status(404).json({ message: "Expense not found" });
       }
   });
+
+
+  const bcrypt = require("bcrypt");
+  const jwt = require("jsonwebtoken")
+
+
+  const authSchema = new mongoose.Schema({
+    username:{type:String,required:true,unique:true},
+    password:{type:String,required:true}
+  });
+  
+  const User = mongoose.model("User", authSchema); 
+
+
+app.post("/api/Register",async(req,res)=>{
+  const {username,password} = req.body;
+  if(!username || !password){
+    return req.status(401).json({message:"name and pasword req"});
+  }
+
+  const existingUser = await User.findOne({username});
+  if(existingUser){
+    return res.status(401).json({message:"User is already Exist"});
+  }
+
+  const hashPassword = await bcrypt.hash(password,12);
+
+
+  const newUser = new User({
+    username:username,
+    password:hashPassword
+  });
+
+  const saveUser = await newUser.save();
+  res.status(200).json(saveUser);
+});
+
+
+
+app.get("/api/login",async(req,res)=>{
+  const {username,password} = req.body;
+  if(!username || !password){
+    return res.status(401).json({message:"username & password require"});
+  }
+  const user = await User.findOne({username});
+  if(!user){
+    return res.status(401).json({message:"Invalid username"});
+  }
+
+  const isValidPassword = await bcrypt.compare(password,user.password);
+  if(!isValidPassword){
+    return res.status(401).json({message:"Invalid Password"});
+  }
+
+  const token = jwt.sign({username},"mahaveer",{expiresIn:"1h"});
+
+  res.status(200).json({message:"Login Done!",token:token});
+});
+
+
+
+function authToken(req,res,next){
+  const token = req.header("Authorization").split(" ")[1];
+
+  if(!token){
+    return res.status(401).json({message:"Error"});
+  }
+
+  jwt.verify(token,"mahaveer",(err,user)=>{
+    if(err) return res.status(403).json({error:err});
+    req.user = user;
+    next();
+  });
+
+}
+
+
+app.get("/api/getPassword/:username", authToken, async (req, res) => {
+  const { username } = req.params;
+
+  if (!username) {
+    return res.status(400).json({ message: "Username is required" });
+  }
+
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ username: user.username, password: "********" });
+   
+});
