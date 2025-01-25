@@ -158,7 +158,7 @@ app.delete("/api/expensesdeletebyId/:id", async (req, res) => {
   });
 
 
-  const bcrypt = require("bcrypt");
+  const bcrypt = require("bcryptjs");
   const jwt = require("jsonwebtoken")
 
 
